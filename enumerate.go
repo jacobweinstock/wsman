@@ -17,21 +17,22 @@ limitations under the License.
 */
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/VictorLowther/simplexml/dom"
 	"github.com/VictorLowther/simplexml/search"
 )
 
-func (c *Client) enumRelease(context *dom.Element) {
+func (c *Client) enumRelease(ctx context.Context, elem *dom.Element) {
 	req := c.NewMessage(RELEASE)
 	body := dom.Elem("Release", NS_WSMEN)
 	req.SetBody(body)
-	body.AddChild(context)
-	req.Send()
+	body.AddChild(elem)
+	req.Send(ctx)
 }
 
-func enumHelper(firstreq, resp *Message) error {
+func enumHelper(ctx context.Context, firstreq, resp *Message) error {
 	searchContext := search.Tag("EnumerationContext", NS_WSMEN)
 	searchEnd := search.Tag("EndOfSequence", NS_WSMAN)
 	if search.First(searchEnd, resp.AllBodyElements()) != nil {
@@ -66,9 +67,9 @@ func enumHelper(firstreq, resp *Message) error {
 		if enumEpr != nil {
 			body.AddChild(enumEpr)
 		}
-		nextResp, err := req.Send()
+		nextResp, err := req.Send(ctx)
 		if err != nil {
-			resp.client.enumRelease(context)
+			resp.client.enumRelease(ctx, context)
 			return err
 		}
 		context = search.First(searchContext, nextResp.AllBodyElements())

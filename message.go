@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -34,7 +35,7 @@ type Message struct {
 	// First arg is the request, second is the initial response.
 	// For now, this is used to allow Enumerate to Pull additional
 	// replys without having to make API users do it.
-	replyHelper func(*Message, *Message) error
+	replyHelper func(context.Context, *Message, *Message) error
 }
 
 // Resource turns a resource URI into an appropriate DOM element
@@ -298,14 +299,14 @@ func (m *Message) Values(args ...string) *Message {
 // Send sends a message to the endpoint of the Client it was
 // constructed with, and returns either the Message that was
 // returned, or an error statung what went wrong.
-func (m *Message) Send() (*Message, error) {
-	res, err := m.client.Post(m.Message)
+func (m *Message) Send(ctx context.Context) (*Message, error) {
+	res, err := m.client.Post(ctx, m.Message)
 	if err != nil {
 		return nil, err
 	}
 	msg := &Message{Message: res, client: m.client}
 	if m.replyHelper != nil {
-		err = m.replyHelper(m, msg)
+		err = m.replyHelper(ctx, m, msg)
 	}
 	if msg.Fault() != nil {
 		return msg, errors.New("SOAP Fault")
