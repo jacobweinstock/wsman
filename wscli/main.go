@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -115,9 +116,11 @@ func main() {
 	client.Debug = debug
 	client.OptimizeEnum = optimizeEnum
 	client.Timeout = (time.Duration(timeout) * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+	defer cancel()
 	var msg *wsman.Message
 	if Action == "Identify" {
-		reply, err := client.Identify()
+		reply, err := client.Identify(ctx)
 		if err != nil {
 			log.Println(err.Error())
 			os.Exit(transportError)
@@ -170,7 +173,7 @@ func main() {
 	if useStdin {
 		msg.SetBody(getStdin())
 	}
-	reply, err := msg.Send()
+	reply, err := msg.Send(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(transportError)

@@ -20,6 +20,7 @@ limitations under the License.
 */
 
 import (
+	"context"
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/tls"
@@ -30,7 +31,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/VictorLowther/simplexml/dom"
 	"github.com/VictorLowther/soap"
@@ -187,7 +187,7 @@ func NewClient(target, username, password string, useDigest bool) (*Client, erro
 		password:   password,
 		useDigest:  useDigest,
 	}
-	res.Timeout = 10 * time.Second
+	// res.Timeout = 10 * time.Second
 	res.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -214,7 +214,7 @@ func (c *Client) Endpoint() string {
 
 // Post overrides http.Client's Post method and adds digext auth handling
 // and SOAP pre and post processing.
-func (c *Client) Post(msg *soap.Message) (response *soap.Message, err error) {
+func (c *Client) Post(ctx context.Context, msg *soap.Message) (response *soap.Message, err error) {
 	req, err := http.NewRequest("POST", c.target, msg.Reader())
 	if err != nil {
 		return nil, err
@@ -231,9 +231,11 @@ func (c *Client) Post(msg *soap.Message) (response *soap.Message, err error) {
 		}
 	}
 	req.Header.Add("content-type", soap.ContentType)
+	req = req.WithContext(ctx)
 	if c.Debug {
 		log.Printf("req:%#v\nbody:\n%s\n", req, msg.String())
 	}
+
 	res, err := c.Do(req)
 	if err != nil {
 		return nil, err
@@ -281,8 +283,8 @@ func (c *Client) Post(msg *soap.Message) (response *soap.Message, err error) {
 // The response will provide the version of WSMAN the endpoint
 // speaks, along with some details about the WSMAN endpoint itself.
 // Note that identify uses soap.Message directly instead of wsman.Message.
-func (c *Client) Identify() (*soap.Message, error) {
+func (c *Client) Identify(ctx context.Context) (*soap.Message, error) {
 	message := soap.NewMessage()
 	message.SetBody(dom.Elem("Identify", NS_WSMID))
-	return c.Post(message)
+	return c.Post(ctx, message)
 }
