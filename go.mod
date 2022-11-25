@@ -1,4 +1,4 @@
-module github.com/ammmze/wsman
+module github.com/jacobweinstock/wsman
 
 go 1.16
 

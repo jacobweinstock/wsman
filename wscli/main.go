@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/VictorLowther/simplexml/dom"
-	"github.com/ammmze/wsman"
+	"github.com/jacobweinstock/wsman"
 )
 
 const (

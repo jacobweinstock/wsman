@@ -7,13 +7,13 @@ the following features:
 * Put and Create accept XML input on stdin.
 
 
-wscli is just a thin wrapper around github.com/ammmze/wsman.  As
+wscli is just a thin wrapper around github.com/jacobweinstock/wsman.  As
 that library gains features, so will wscli.
 
 Build instructions:
 
-    go get github.com/ammmze/wsman
-    cd $GOPATH/src/github.com/ammmze/wsman/wscli
+    go get github.com/jacobweinstock/wsman
+    cd $GOPATH/src/github.com/jacobweinstock/wsman/wscli
     go build
 
 Usage examples:
